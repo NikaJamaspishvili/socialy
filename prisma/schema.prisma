@@ -77,3 +77,14 @@ model Authenticator {
  
   @@id([userId, credentialID])
 }
+
+model Posts {
+  id            String      @id @default(cuid())
+  userId        String
+  description   String
+  images        Images[]    
+}
+
+model Images {
+  public_id    String       @unique
+}

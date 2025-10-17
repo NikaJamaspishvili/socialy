@@ -2,50 +2,52 @@
 
 import { Label } from "@radix-ui/react-label";
 import { Input } from "../ui/input";
-import { CardAction, CardFooter } from "../ui/card";
+import { CardFooter } from "../ui/card";
 import { Button } from "../ui/button";
 import { useState } from "react";
-import {login} from "@/actions/login.action";
+import {loginWithGoogleAction,loginWithCredentianlsAction} from "@/actions/login.action";
+import { useRouter } from "next/navigation";
 
 const Form = () => {
-    const [page,setPage] = useState<"login" | "signup">("login");
+    const [isError,setIsError] = useState<boolean>(false);
+    const router = useRouter();
+
+    const handleSubmit = async (e:React.FormEvent) => {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget as HTMLFormElement);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      const authResult = await loginWithCredentianlsAction(email,password);
+      if(authResult.status) router.push("/");
+      setIsError(true);
+    }
 
   return (
-    <form>
+    <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
     <div className="flex flex-col gap-6">
-    {page === "signup" && <div className="grid gap-2">
+    <div className="grid gap-2">
       <div className="flex items-center">
-          <Label htmlFor="password">Username</Label>
+        <Label htmlFor="password">Username</Label>
         </div>
-        <Input id="password" type="password" required />
-      </div>}
-      <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="m@example.com"
-          required
-        />
+        <Input id="email" name="email" type="email" required />
       </div>
       <div className="grid gap-2">
         <div className="flex items-center">
           <Label htmlFor="password">Password</Label>
         </div>
-        <Input id="password" type="password" required />
+        <Input id="password" name="password" type="password" required />
+        {isError && <span className="text-red-500 text-sm text-center">Password Was Wrong</span>}
       </div>
     </div>
-    <CardAction>
-          <Button onClick={()=>setPage((prev)=> prev === "login" ? "signup" : "login")} variant="link" type="button">{page === "login" ? "signup" : "login"}</Button>
-    </CardAction>
     <CardFooter className="flex-col gap-2">
         <Button type="submit" className="w-full cursor-pointer">
           Login
         </Button>
-        <Button onClick={login} variant="outline" type="button" className="w-full">
+        <Button onClick={loginWithGoogleAction} variant="outline" type="button" className="w-full">
           Login with Google
         </Button>
-      </CardFooter>
+    </CardFooter>
   </form>
   )
 }

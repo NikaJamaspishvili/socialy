@@ -9,6 +9,7 @@ import { Sparkles, X } from "lucide-react";
 import { uploadNewPost } from "@/actions/cloudinary.action";
 import { reduceImageSize } from "@/lib/utils";
 import { useTransition } from "react";
+import Image from "next/image";
 import Loader from "@/components/ui/Loader";
 
 function CreatePost({ userId }: { userId: string }) {
@@ -65,7 +66,7 @@ function CreatePost({ userId }: { userId: string }) {
 					<Avatar className="mb-auto w-[70px] h-full">
 						<AvatarImage
 							src={
-								"https://scontent.ftbs5-3.fna.fbcdn.net/v/t39.30808-6/456557319_1983041078820065_7542496239843671656_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=MWJ_IIum5vMQ7kNvwEVBbca&_nc_oc=AdnG6nDhKm5Q0MQ6iMFSfV62Hskan1yf64QTC1WI-WK0OeYycGRr55eEH-fSLBK1bqU&_nc_zt=23&_nc_ht=scontent.ftbs5-3.fna&_nc_gid=KQtheD3qZZoKxPy2R78zzw&oh=00_AfdbGwv-OEkf15lwXTSVhrpIDJd3QK8PdmeB9ia3KGBO8Q&oe=68F7D77A"
+								"https://scontent.ftbs10-1.fna.fbcdn.net/v/t39.30808-6/456557319_1983041078820065_7542496239843671656_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHn8nA2SCKrtlClnTRk71w5UhyRSdWm5RdSHJFJ1ablF9RrLzREVadRTDGDm02NBxax2cZ-zyAyWtH1GD2Nttni&_nc_ohc=6sPpyg5P-O4Q7kNvwFXHX8K&_nc_oc=AdlbGvYCzPehsHndCXFF-TYwHaARf7LtXa7Tw1i1hfOFgkXfiV_60nD6J_DcM5HaHqU&_nc_zt=23&_nc_ht=scontent.ftbs10-1.fna&_nc_gid=WODQjRPkjGo6ocm0mbLgtg&oh=00_Afdb7n2Mto7rlGT6-TSlH6Za7ofSvprACNTw1cTEO3rhcQ&oe=6906903A"
 							}
 							alt="Avatar Image Of User"
 						/>
@@ -101,7 +102,7 @@ function CreatePost({ userId }: { userId: string }) {
 									onClick={() => setImageUrls((prev) => prev.filter((_, imgIndex) => imgIndex !== index))}
 									className="border cursor-pointer rounded-full p-1 ml-auto bg-red-500"
 								/>
-								<img key={index} className="w-full" src={img} alt={`Uploaded Image Number ${index}`} />
+								<Image width={400} height={400} className="w-full" src={img} alt={`Uploaded Image Number ${index}`} />
 							</div>
 						))}
 					</div>

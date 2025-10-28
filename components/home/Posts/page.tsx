@@ -6,26 +6,27 @@ import Image from "next/image";
 import PostActities from "./PostActivities";
 import { Button } from "@/components/ui/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import Loader from "@/components/ui/Loader";
 
 const Posts = ({ userId }: { userId: string }) => {
-	const {
-		data,
-		isFetchingNextPage: isLoading,
-		fetchNextPage,
-		refetch,
-	} = useInfiniteQuery({
+	const { data, isFetchingNextPage, fetchNextPage, isFetching, isLoading } = useInfiniteQuery({
 		queryKey: ["fetchPosts"],
 		queryFn: ({ pageParam }: { pageParam: string | undefined }) => getAllPosts(userId, pageParam),
 		initialPageParam: undefined,
 		getNextPageParam: (lastPage) => {
 			console.log("last page", lastPage);
-			if (lastPage.length === 0) {
-				return undefined;
-			} else {
-				return lastPage[lastPage.length - 1].id;
-			}
+			if (lastPage.length === 0) return undefined;
+			return lastPage[lastPage.length - 1].id;
 		},
 	});
+	if (isLoading) return <Loader message="Fetching Posts..." />;
+	console.log(data);
+	if (!isFetching && data?.pages[0].length === 0)
+		return (
+			<div className="text-center mt-10">
+				<h1 className="text-2xl font-bold">Couldn't find any posts</h1>
+			</div>
+		);
 	if (data)
 		return (
 			<div className="flex flex-col items-center gap-15 mt-15">

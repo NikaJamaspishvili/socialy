@@ -1,34 +1,67 @@
+"use client";
+
 import { getAllPosts } from "@/actions/posts.action";
 import PostImages from "./PostImages";
 import Image from "next/image";
 import PostActities from "./PostActivities";
+import { Button } from "@/components/ui/button";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
-const Posts = async ({ userId }: { userId: string }) => {
-	const posts = await getAllPosts(userId);
-	console.log(posts);
-	return (
-		<div className="flex flex-col items-center gap-15 mt-15">
-			{posts.map((post, index) => (
-				<div key={index} className="w-1/2 flex flex-col gap-2 items-center">
-					<section className="flex items-center mr-auto gap-3">
-						<Image
-							width={400}
-							height={400}
-							src={post.user.image || "/guest_image.png"}
-							className="bg-white rounded-full w-15"
-							alt={post.user.name + " profile image"}
-						/>
-						<h1 className="font-bold text-xl">{post.user.name}</h1>
-					</section>
-					<section className="bg-gray-800 w-full p-3 rounded-xl flex flex-col gap-3">
-						<p className="font-bold">{post.description}</p>
-						<PostImages images={post.images} />
-						<PostActities userId={post.user.id} postId={post.id} likeCount={post._count.PostLikes} />
-					</section>
-				</div>
-			))}
-		</div>
-	);
+const Posts = ({ userId }: { userId: string }) => {
+	const {
+		data,
+		isFetchingNextPage: isLoading,
+		fetchNextPage,
+		refetch,
+	} = useInfiniteQuery({
+		queryKey: ["fetchPosts"],
+		queryFn: ({ pageParam }: { pageParam: string | undefined }) => getAllPosts(userId, pageParam),
+		initialPageParam: undefined,
+		getNextPageParam: (lastPage) => {
+			console.log("last page", lastPage);
+			if (lastPage.length === 0) {
+				return undefined;
+			} else {
+				return lastPage[lastPage.length - 1].id;
+			}
+		},
+	});
+	if (data)
+		return (
+			<div className="flex flex-col items-center gap-15 mt-15">
+				{data?.pages.map((page) => {
+					return page.map((post) => (
+						<div key={post.id} className="w-1/2 flex flex-col gap-2 items-center">
+							<section className="flex items-center mr-auto gap-3">
+								<Image
+									width={400}
+									height={400}
+									src={post.user.image || "/guest_image.png"}
+									className="bg-white rounded-full w-15"
+									alt={post.user.name + " profile image"}
+								/>
+								<h1 className="font-bold text-xl">{post.user.name}</h1>
+							</section>
+							<section className="bg-gray-800 w-full p-3 rounded-xl flex flex-col gap-3">
+								<p className="font-bold">{post.description}</p>
+								<PostImages images={post.images} />
+								<PostActities
+									userId={post.user.id}
+									postId={post.id}
+									likeCount={post._count.PostLikes}
+									commentCount={post._count.PostComments}
+								/>
+							</section>
+						</div>
+					));
+				})}
+				{data.pages[data.pages.length - 1].length >= 5 && (
+					<Button className="cursor-pointer" onClick={() => fetchNextPage()}>
+						Show More Posts
+					</Button>
+				)}
+			</div>
+		);
 };
 
 export default Posts;

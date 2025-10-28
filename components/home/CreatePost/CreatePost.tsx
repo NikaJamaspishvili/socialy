@@ -11,13 +11,15 @@ import { reduceImageSize } from "@/lib/utils";
 import { useTransition } from "react";
 import Image from "next/image";
 import Loader from "@/components/ui/Loader";
+import { useQueryClient } from "@tanstack/react-query";
 
-function CreatePost({ userId }: { userId: string }) {
+function CreatePost({ userId, userImage }: { userId: string; userImage: string | null | undefined }) {
 	const imageInputRef = useRef<HTMLInputElement | null>(null);
 	const [textArea, setTextArea] = useState("");
 	const [imageUrls, setImageUrls] = useState<string[]>([]);
 	const [imageFiles, setImageFiles] = useState<File[]>([]);
 	const [isPending, startTransition] = useTransition();
+	const queryClient = useQueryClient();
 
 	const assembleImageView = async (imageFile: File) => {
 		const allowedExtestions = ["image/png", "image/jpeg", "image/jpg"];
@@ -40,10 +42,18 @@ function CreatePost({ userId }: { userId: string }) {
 		}
 	};
 
+	const handleImageFileRemove = async (index: number) => {
+		setImageUrls((prev) => prev.filter((_, imgIndex) => imgIndex !== index));
+		setImageFiles((prev) => prev.filter((_, imgIndex) => imgIndex !== index));
+	};
+
 	const handleImageFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
 		if (!e.target.files) return;
 		const imageFiles = Array.from(e.target.files);
-
+		if (imageFiles.length > 3) {
+			alert("Only 3 Images Max!");
+			return;
+		}
 		await Promise.all(imageFiles.map(assembleImageView));
 	};
 
@@ -51,6 +61,7 @@ function CreatePost({ userId }: { userId: string }) {
 		e.preventDefault();
 		startTransition(async () => {
 			const response = await uploadNewPost(imageFiles, userId, textArea);
+			queryClient.invalidateQueries({ queryKey: ["fetchPosts"] });
 			if (response.status) {
 				setImageFiles([]);
 				setImageUrls([]);
@@ -63,15 +74,13 @@ function CreatePost({ userId }: { userId: string }) {
 		<form onSubmit={handleSubmit} className="mx-auto w-1/2">
 			<Card className="border p-3">
 				<div className="flex gap-3 items-center">
-					<Avatar className="mb-auto w-[70px] h-full">
-						<AvatarImage
-							src={
-								"https://scontent.ftbs10-1.fna.fbcdn.net/v/t39.30808-6/456557319_1983041078820065_7542496239843671656_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHn8nA2SCKrtlClnTRk71w5UhyRSdWm5RdSHJFJ1ablF9RrLzREVadRTDGDm02NBxax2cZ-zyAyWtH1GD2Nttni&_nc_ohc=6sPpyg5P-O4Q7kNvwFXHX8K&_nc_oc=AdlbGvYCzPehsHndCXFF-TYwHaARf7LtXa7Tw1i1hfOFgkXfiV_60nD6J_DcM5HaHqU&_nc_zt=23&_nc_ht=scontent.ftbs10-1.fna&_nc_gid=WODQjRPkjGo6ocm0mbLgtg&oh=00_Afdb7n2Mto7rlGT6-TSlH6Za7ofSvprACNTw1cTEO3rhcQ&oe=6906903A"
-							}
-							alt="Avatar Image Of User"
-						/>
-						<AvatarFallback />
-					</Avatar>
+					<Image
+						width={400}
+						height={400}
+						src={userImage || "/guest_image.png"}
+						className="mb-auto w-[70px] h-full rounded-full"
+						alt={"profile image"}
+					/>
 					<div className="w-full flex flex-col">
 						<Textarea onChange={(e) => setTextArea(e.target.value)} placeholder="What is on your mind..." />
 						{textArea.length > 0 && (
@@ -99,7 +108,7 @@ function CreatePost({ userId }: { userId: string }) {
 						{imageUrls.map((img, index) => (
 							<div key={index} className="w-3/4 flex flex-col mt-2 gap-2">
 								<X
-									onClick={() => setImageUrls((prev) => prev.filter((_, imgIndex) => imgIndex !== index))}
+									onClick={() => handleImageFileRemove(index)}
 									className="border cursor-pointer rounded-full p-1 ml-auto bg-red-500"
 								/>
 								<Image width={400} height={400} className="w-full" src={img} alt={`Uploaded Image Number ${index}`} />

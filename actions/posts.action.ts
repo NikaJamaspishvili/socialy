@@ -2,7 +2,7 @@
 
 import { prisma } from "@/prisma";
 
-export const getAllPosts = async (userId: string) => {
+export const getAllPosts = async (userId: string, cursor?: string) => {
 	return await prisma.posts.findMany({
 		where: {
 			PostLikes: {
@@ -10,6 +10,12 @@ export const getAllPosts = async (userId: string) => {
 					userId: userId,
 				},
 			},
+			// userId: {
+			// 	not: userId,
+			// },
+		},
+		orderBy: {
+			createdAt: "desc",
 		},
 		include: {
 			user: {
@@ -22,9 +28,12 @@ export const getAllPosts = async (userId: string) => {
 			_count: {
 				select: {
 					PostLikes: true,
+					PostComments: true,
 				},
 			},
 		},
+		take: 5,
+		...(cursor && { cursor: { id: cursor }, skip: 1 }),
 	});
 };
 
@@ -49,6 +58,37 @@ export const unlikePost = async (userId: string, postid: string) => {
 				userId: userId,
 				postId: postid,
 			},
+		},
+	});
+};
+
+export const getPostComments = async (postId: string, cursor?: string) => {
+	return await prisma.postComments.findMany({
+		where: {
+			postId: postId,
+		},
+		select: {
+			id: true,
+			content: true,
+			createdAt: true,
+			user: {
+				select: {
+					name: true,
+					image: true,
+				},
+			},
+		},
+		take: 5,
+		...(cursor && { cursor: { id: cursor }, skip: 1 }),
+	});
+};
+
+export const insertPostComment = async (postId: string, userId: string, content: string) => {
+	return await prisma.postComments.create({
+		data: {
+			content: content,
+			userId: userId,
+			postId: postId,
 		},
 	});
 };

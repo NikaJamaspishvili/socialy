@@ -51,7 +51,6 @@ export async function uploadNewPost(files: File[], userId: string, description: 
 			},
 		});
 
-		revalidatePath("/");
 		return { status: true };
 	} catch (err) {
 		console.log(err);

@@ -1,14 +1,25 @@
 "use client";
-import PostComments from "./PostComments";
+import PostComments from "./comments/PostComments";
 import { useState } from "react";
 import { ThumbsUp, MessageCircle, Share } from "lucide-react";
 import { likePost, unlikePost } from "@/actions/posts.action";
 
-const PostActities = ({ userId, postId, likeCount }: { userId: string; postId: string; likeCount: number }) => {
+const PostActities = ({
+	userId,
+	postId,
+	likeCount,
+	commentCount,
+}: {
+	userId: string;
+	postId: string;
+	likeCount: number;
+	commentCount: number;
+}) => {
 	const [showComments, setShowComments] = useState(false);
 	const [isPostLiked, setIsPostLiked] = useState(false);
 	const [postLikeCount, setPostLikeCount] = useState(likeCount);
-
+	const [postCommentCount, setPostCommentCount] = useState(commentCount);
+	// debugger;
 	async function handleLikeClick() {
 		if (!isPostLiked) {
 			setPostLikeCount((prev) => (prev += 1));
@@ -28,13 +39,14 @@ const PostActities = ({ userId, postId, likeCount }: { userId: string; postId: s
 					<p>{postLikeCount}</p>
 				</button>
 				<button onClick={() => setShowComments(!showComments)}>
-					<MessageCircle />
+					<MessageCircle fill={showComments ? "white" : "none"} />
+					<p>{postCommentCount}</p>
 				</button>
 				<button>
 					<Share />
 				</button>
 			</section>
-			{showComments && <PostComments postId={postId} />}
+			{showComments && <PostComments postId={postId} userId={userId} setPostCommentCount={setPostCommentCount} />}
 		</div>
 	);
 };
